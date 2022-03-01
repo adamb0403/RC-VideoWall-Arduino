@@ -17,7 +17,7 @@ RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, true);
 const int chipSelect = 53; // Define cs pin for sd card
 char z;
 int i, j, x, y, u;
-byte r, g, b, t, SLIDE_TIME, IMAGE_COUNT=1;
+byte r, g, b, t, SLIDE_TIME=1, IMAGE_COUNT=1;
 
 File image, imgdata;
 
@@ -117,18 +117,24 @@ void readBluetooth() {
   Serial.print(SLIDE_TIME);
 
   for(int count=1; count<=IMAGE_COUNT; count++) {
-    String fname = String(count) + ".txt"; // Form image file name
-    if (SD.exists(fname)) {
-      SD.remove(fname);
+    String filename = String(count) + ".txt"; // Form image file name
+    if (SD.exists(filename)) {
+      SD.remove(filename);
     }
-    File saveBluetooth = SD.open(fname); //open image file for writing
+    File saveBluetooth = SD.open(filename, FILE_WRITE); //open image file for writing
     
-    for(int single_byte=0; single_byte<3072; single_byte++) {
-      Serial.write(Serial1.read());
-      //saveBluetooth.print(Serial1.read());
+    for(int single_byte=0; single_byte<3071; single_byte++) {
+      Serial.write( Serial1.read() );
+      //saveBluetooth.write(Serial1.read());
     }
 
     saveBluetooth.close();
   }
-  Serial1.flush();
+  serialFlush();
+}
+
+void serialFlush(){
+  while(Serial1.available() > 0) {
+    char h = Serial1.read();
+  }
 }
