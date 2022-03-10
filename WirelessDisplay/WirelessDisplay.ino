@@ -1,8 +1,9 @@
 #include <RGBmatrixPanel.h> // Required AdaFruit Libraries
 #include <Adafruit_GFX.h>
+#include <SdFat.h>
 
-#include <SPI.h> // SD libraries
-#include <SD.h>
+//#include <SPI.h> // SD libraries
+//#include <SD.h>
 
 #define CLK 11 // Define pins for display
 #define OE   9
@@ -39,6 +40,8 @@ void setup() {
   Serial1.begin(38400);
 
   matrix.begin(); // Start the LED display
+
+  
 }
 
 void loop() {
@@ -68,39 +71,50 @@ void loop() {
     String fname = String(x) + ".txt"; // Form image file name
     image = SD.open(fname); //open image file for reading
 
-     for(i=0; i<32; i++) { // Iterate for 32x32 pixels
-      for(j=0; j<32; j++) {
-        r = image.read(); // Read values for RGB
-        g = image.read();
-        b = image.read();
-  
-        if (r >= 'A') { // If value is a hex letter, convert to corresponding number
-          r = r - 55;        
-        }
-
-        else {
-          r = r - 48;
-        }
-  
-        if (g >= 'A') {
-          g = g - 55;  
-        }
-
-        else {
-          g = g - 48;
-        }
-  
-        if (b >= 'A') {
-          b = b - 55;  
-        }
-
-        else {
-          b = b - 48;
-        }
-        
-        matrix.drawPixel(j, i, matrix.Color444(r, g, b)); // Draw the RGB pixel
+    for(byte rows=0; rows<32; rows++) {
+      byte buffers[96];
+      byte counter = 0;
+      image.read(buffers, sizeof(buffers);
+      
+      for(byte column=0; coulumn<32; column++) {
+        matrix.drawPixel(column, rows, matrix.Color444(hexCheck(buffers[counter]), hexCheck(buffers[counter+1]), hexCheck(buffers[counter+2]))); // Draw the RGB pixel
+        counter+=3;
       }
     }
+
+//     for(i=0; i<32; i++) { // Iterate for 32x32 pixels
+//      for(j=0; j<32; j++) {
+//        r = image.read(); // Read values for RGB
+//        g = image.read();
+//        b = image.read();
+//  
+//        if (r >= 'A') { // If value is a hex letter, convert to corresponding number
+//          r = r - 55;        
+//        }
+//
+//        else {
+//          r = r - 48;
+//        }
+//  
+//        if (g >= 'A') {
+//          g = g - 55;  
+//        }
+//
+//        else {
+//          g = g - 48;
+//        }
+//  
+//        if (b >= 'A') {
+//          b = b - 55;  
+//        }
+//
+//        else {
+//          b = b - 48;
+//        }
+//        
+//        matrix.drawPixel(j, i, matrix.Color444(r, g, b)); // Draw the RGB pixel
+//      }
+//    }
     
     matrix.swapBuffers(false);
     image.close();
@@ -116,16 +130,17 @@ void readBluetooth() {
   Serial.print(IMAGE_COUNT);
   Serial.print(SLIDE_TIME);
 
-  for(int count=1; count<=IMAGE_COUNT; count++) {
+  for(byte count=1; count<=IMAGE_COUNT; count++) {
     String filename = String(count) + ".txt"; // Form image file name
-    if (SD.exists(filename)) {
-      SD.remove(filename);
-    }
-    File saveBluetooth = SD.open(filename, FILE_WRITE); //open image file for writing
     
-    for(int single_byte=0; single_byte<3071; single_byte++) {
-      Serial.write( Serial1.read() );
-      //saveBluetooth.write(Serial1.read());
+    File saveBluetooth = SD.open(filename, O_CREAT | O_TRUNC | O_WRITE); //open image file for writing
+
+    for(byte chunks=0; chunks<48; chunks++) {
+      for(byte single_byte=0; single_byte<64; single_byte++) {
+        Serial.write( Serial1.read() );
+        //saveBluetooth.write(Serial1.read());
+      }
+      delay(500);
     }
 
     saveBluetooth.close();
@@ -137,4 +152,20 @@ void serialFlush(){
   while(Serial1.available() > 0) {
     char h = Serial1.read();
   }
+}
+
+int File::read(void *buf, uint16_t nbyte) {
+  if (_file) 
+    return _file->read(buf, nbyte);
+  return 0;
+}
+
+byte hexCheck(byte x) {
+  if (x >= 'A') { // If value is a hex letter, convert to corresponding number
+      x = x - 55;
+  }
+  else {
+      x = x - 48;
+  }
+  return(x);
 }
