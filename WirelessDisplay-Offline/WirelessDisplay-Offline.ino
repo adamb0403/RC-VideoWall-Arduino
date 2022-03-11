@@ -98,6 +98,6 @@ void loop() {
     matrix.swapBuffers(false);
     image.close();
 
-    delay(u); // how long each image displays for
+    //delay(u); // how long each image displays for
   }
 }

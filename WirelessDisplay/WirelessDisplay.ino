@@ -1,9 +1,9 @@
 #include <RGBmatrixPanel.h> // Required AdaFruit Libraries
 #include <Adafruit_GFX.h>
-#include <SdFat.h>
+//#include "SdFat.h"
 
-//#include <SPI.h> // SD libraries
-//#include <SD.h>
+#include <SPI.h> // SD libraries
+#include <SD.h>
 
 #define CLK 11 // Define pins for display
 #define OE   9
@@ -18,7 +18,7 @@ RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, true);
 const int chipSelect = 53; // Define cs pin for sd card
 char z;
 int i, j, x, y, u;
-byte r, g, b, t, SLIDE_TIME=1, IMAGE_COUNT=1;
+byte r, g, b, t, SLIDE_TIME=0, IMAGE_COUNT=7;
 
 File image, imgdata;
 
@@ -74,9 +74,9 @@ void loop() {
     for(byte rows=0; rows<32; rows++) {
       byte buffers[96];
       byte counter = 0;
-      image.read(buffers, sizeof(buffers);
+      image.read(buffers, sizeof(buffers));
       
-      for(byte column=0; coulumn<32; column++) {
+      for(byte column=0; column<32; column++) {
         matrix.drawPixel(column, rows, matrix.Color444(hexCheck(buffers[counter]), hexCheck(buffers[counter+1]), hexCheck(buffers[counter+2]))); // Draw the RGB pixel
         counter+=3;
       }
@@ -119,7 +119,7 @@ void loop() {
     matrix.swapBuffers(false);
     image.close();
 
-    delay(SLIDE_TIME*1000); // how long each image displays for
+    //delay(SLIDE_TIME*1000); // how long each image displays for
   }
 }
 
@@ -154,11 +154,11 @@ void serialFlush(){
   }
 }
 
-int File::read(void *buf, uint16_t nbyte) {
-  if (_file) 
-    return _file->read(buf, nbyte);
-  return 0;
-}
+//int File::read(void *buf, uint16_t nbyte) {
+//  if (_file) 
+//    return _file->read(buf, nbyte);
+//  return 0;
+//}
 
 byte hexCheck(byte x) {
   if (x >= 'A') { // If value is a hex letter, convert to corresponding number
