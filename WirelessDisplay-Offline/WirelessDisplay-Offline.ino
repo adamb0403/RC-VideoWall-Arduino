@@ -56,7 +56,8 @@ void loop() {
   }
 
   u = t*1000;
-  
+
+  float time1 = micros();
   for (x=1; x<=y; x++) { // Iterate for all images on sd card
     String fname = String(x) + ".txt"; // Form image file name
     image = SD.open(fname); //open image file for reading
@@ -98,6 +99,11 @@ void loop() {
     matrix.swapBuffers(false);
     image.close();
 
+
     //delay(u); // how long each image displays for
   }
+  
+    float time2 = micros();
+    float fps = (7.0/(time2-time1))*1000000.0;
+      Serial.println(fps);
 }

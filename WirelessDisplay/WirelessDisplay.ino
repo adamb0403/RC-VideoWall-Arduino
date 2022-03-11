@@ -66,21 +66,34 @@ void loop() {
 //  }
 //
 //  u = t*1000;
-  
+  float time1 = micros();
   for (x=1; x<=IMAGE_COUNT; x++) { // Iterate for all images on sd card
     String fname = String(x) + ".txt"; // Form image file name
     image = SD.open(fname); //open image file for reading
 
-    for(byte rows=0; rows<32; rows++) {
-      byte buffers[96];
+    for(byte rows=0; rows<16; rows++) {
+      byte buffers[192];
       byte counter = 0;
       image.read(buffers, sizeof(buffers));
-      
-      for(byte column=0; column<32; column++) {
-        matrix.drawPixel(column, rows, matrix.Color444(hexCheck(buffers[counter]), hexCheck(buffers[counter+1]), hexCheck(buffers[counter+2]))); // Draw the RGB pixel
-        counter+=3;
+
+      for(byte irow=0; irow<2; irow++) {
+        for(byte column=0; column<32; column++) {
+          matrix.drawPixel(column, irow+(rows*2), matrix.Color444(hexCheck(buffers[counter]), hexCheck(buffers[counter+1]), hexCheck(buffers[counter+2]))); // Draw the RGB pixel
+          counter+=3;
+        }
       }
     }
+
+//  for(byte rows=0; rows<32; rows++) {
+//    byte buffers[96];
+//    byte counter = 0;
+//    image.read(buffers, sizeof(buffers));
+//    
+//    for(byte column=0; column<32; column++) {
+//        matrix.drawPixel(column, rows, matrix.Color444(hexCheck(buffers[counter]), hexCheck(buffers[counter+1]), hexCheck(buffers[counter+2]))); // Draw the RGB pixel
+//        counter+=3;
+//    }
+//  }
 
 //     for(i=0; i<32; i++) { // Iterate for 32x32 pixels
 //      for(j=0; j<32; j++) {
@@ -121,6 +134,9 @@ void loop() {
 
     //delay(SLIDE_TIME*1000); // how long each image displays for
   }
+  float time2 = micros();
+  float fps = (7.0/(time2-time1))*1000000.0;
+  Serial.println(fps);
 }
 
 void readBluetooth() {
