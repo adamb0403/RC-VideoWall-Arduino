@@ -18,7 +18,7 @@ RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, true);
 const int chipSelect = 53; // Define cs pin for sd card
 char z;
 int i, j, x, y, u;
-byte r, g, b, t, SLIDE_TIME=0, IMAGE_COUNT=7;
+byte r, g, b, t, SLIDE_TIME=0, IMAGE_COUNT=2;
 
 File image, imgdata;
 
@@ -46,9 +46,42 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
-  if (Serial1.available() > 0) {
-    readBluetooth();
+  while(Serial1.available() < 1) {
+    float time1 = micros();
+    for (x=1; x<=IMAGE_COUNT; x++) { // Iterate for all images on sd card
+      if (Serial1.available() > 0) {
+        break;
+      }
+      String fname = String(x) + ".txt"; // Form image file name
+      image = SD.open(fname); //open image file for reading
+  
+      for(byte rows=0; rows<16; rows++) {
+        byte buffers[192];
+        byte counter = 0;
+        image.read(buffers, sizeof(buffers));
+  
+        for(byte irow=0; irow<2; irow++) {
+          if (Serial1.available() > 0) {
+            break;
+          }
+          for(byte column=0; column<32; column++) {
+            matrix.drawPixel(irow+(rows*2), column, matrix.Color444(hexCheck(buffers[counter]), hexCheck(buffers[counter+1]), hexCheck(buffers[counter+2]))); // Draw the RGB pixel
+            counter+=3;
+          }
+        }
+      }
+    
+      matrix.swapBuffers(false);
+      image.close();
+
+      delay(SLIDE_TIME*1000); // how long each image displays for
+    }
+    float time2 = micros();
+    float fps = (7.0/(time2-time1))*1000000.0;
+    //Serial.println(fps);
   }
+
+  readBluetooth();
   
 //  imgdata = SD.open("imgdata.txt"); // Open image counter file to read how many images are on SD card
 //  z = imgdata.read();
@@ -66,23 +99,7 @@ void loop() {
 //  }
 //
 //  u = t*1000;
-  float time1 = micros();
-  for (x=1; x<=IMAGE_COUNT; x++) { // Iterate for all images on sd card
-    String fname = String(x) + ".txt"; // Form image file name
-    image = SD.open(fname); //open image file for reading
-
-    for(byte rows=0; rows<16; rows++) {
-      byte buffers[192];
-      byte counter = 0;
-      image.read(buffers, sizeof(buffers));
-
-      for(byte irow=0; irow<2; irow++) {
-        for(byte column=0; column<32; column++) {
-          matrix.drawPixel(column, irow+(rows*2), matrix.Color444(hexCheck(buffers[counter]), hexCheck(buffers[counter+1]), hexCheck(buffers[counter+2]))); // Draw the RGB pixel
-          counter+=3;
-        }
-      }
-    }
+  
 
 //  for(byte rows=0; rows<32; rows++) {
 //    byte buffers[96];
@@ -128,15 +145,6 @@ void loop() {
 //        matrix.drawPixel(j, i, matrix.Color444(r, g, b)); // Draw the RGB pixel
 //      }
 //    }
-    
-    matrix.swapBuffers(false);
-    image.close();
-
-    //delay(SLIDE_TIME*1000); // how long each image displays for
-  }
-  float time2 = micros();
-  float fps = (7.0/(time2-time1))*1000000.0;
-  Serial.println(fps);
 }
 
 void readBluetooth() {
@@ -146,20 +154,29 @@ void readBluetooth() {
   Serial.print(IMAGE_COUNT);
   Serial.print(SLIDE_TIME);
 
-  for(byte count=1; count<=IMAGE_COUNT; count++) {
+  for(int count=1; count<=IMAGE_COUNT; count++) {
     String filename = String(count) + ".txt"; // Form image file name
+
+    if (SD.exists(filename)) {
+      SD.remove(filename);
+    }
     
-    File saveBluetooth = SD.open(filename, O_CREAT | O_TRUNC | O_WRITE); //open image file for writing
+    File saveBluetooth = SD.open(filename, FILE_WRITE); //open image file for writing
 
     for(byte chunks=0; chunks<48; chunks++) {
+      byte btbuffer[64];
       for(byte single_byte=0; single_byte<64; single_byte++) {
-        Serial.write( Serial1.read() );
+        //Serial.write( Serial1.read() );
+        btbuffer[single_byte] = Serial1.read();
         //saveBluetooth.write(Serial1.read());
       }
-      delay(500);
+      saveBluetooth.write(btbuffer, 64);
+      Serial.println(chunks);
+      delay(300);
     }
 
     saveBluetooth.close();
+    Serial.println("Upload done");
   }
   serialFlush();
 }
@@ -169,12 +186,6 @@ void serialFlush(){
     char h = Serial1.read();
   }
 }
-
-//int File::read(void *buf, uint16_t nbyte) {
-//  if (_file) 
-//    return _file->read(buf, nbyte);
-//  return 0;
-//}
 
 byte hexCheck(byte x) {
   if (x >= 'A') { // If value is a hex letter, convert to corresponding number
