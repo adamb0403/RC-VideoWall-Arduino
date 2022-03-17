@@ -42,7 +42,7 @@ void setup()
     
     
     // communication with the BT module on serial1
-    Serial1.begin(38400);
+    Serial1.begin(115200);
     
     // LED to show we have started the serial channels
     //digitalWrite(LEDPIN, HIGH);  

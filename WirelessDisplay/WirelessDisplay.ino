@@ -108,24 +108,26 @@ void readBluetooth() {
     File saveBluetooth = SD.open(filename, O_CREAT | O_WRITE | O_TRUNC); //open image file for writing
     
     for(byte chunks=0; chunks<chunksize; chunks++) {
+      while (Serial1.available() < 1) {
+        ;
+      }
+      delay(50);
       int x1 = micros();
       for(byte single_byte=0; single_byte<bytesize; single_byte++) {
         //Serial.write( Serial1.read() );
         btbuffer[single_byte] = Serial1.read();
       }
       int x2 = micros();
-      //Serial.println(x2-x1);
       saveBluetooth.write(btbuffer, bytesize);
-      //Serial.println(chunks);
 
       if(chunks+1 % (512/bytesize) == 0) { // When 512 bytes are written to the file, copy the data physically to the SD card using flush()
         saveBluetooth.flush();
       }
-      
-      delay(100);
+      Serial1.write(1);
+//      delay(100);
     }
     saveBluetooth.close();
-    Serial.println("Upload done");
+    Serial.println("Image done");
   }
   serialFlush();
 }
