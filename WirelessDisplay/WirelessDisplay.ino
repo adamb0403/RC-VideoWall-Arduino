@@ -36,6 +36,13 @@ void setup() {
   Serial1.begin(115200);
 
   matrix.begin(); // Start the LED display
+  
+  matrix.setCursor(0, 0);    // start at top left, with one pixel of spacing
+  matrix.setTextSize(1);     // size 1 == 8 pixels high
+  matrix.setTextWrap(true); 
+  matrix.setTextColor(matrix.Color333(7,7,7));
+  matrix.print("Recieving Data...");
+  delay(10000);
 }
 
 void loop() {
@@ -106,6 +113,7 @@ void readBluetooth() {
 //    }
     
     File saveBluetooth = SD.open(filename, O_CREAT | O_WRITE | O_TRUNC); //open image file for writing
+    delay(50);
     
     for(byte chunks=0; chunks<chunksize; chunks++) {
       while (Serial1.available() < 1) {
