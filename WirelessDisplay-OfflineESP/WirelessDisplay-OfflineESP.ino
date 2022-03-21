@@ -1,8 +1,9 @@
 #include <RGBmatrixPanel.h> // Required AdaFruit Libraries
 #include <Adafruit_GFX.h>
 
-#include <SPI.h> // SD libraries
-#include <SD.h>
+#include "FS.h"
+#include "SPI.h" // SD libraries
+#include "SD.h"
 
 #define CLK  15   // USE THIS ON ADAFRUIT METRO M0, etc.
 #define OE   33
@@ -35,11 +36,14 @@ void setup() {
   }
   Serial.println("initialization done.");
 
+
+
   matrix.begin(); // Start the LED display
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
+  fs::FS SD;
   imgdata = SD.open("imgdata.txt"); // Open image counter file to read how many images are on SD card
   z = imgdata.read();
   t = imgdata.read();
@@ -48,7 +52,7 @@ void loop() {
   y = z - '0';
   
   if (t >= 'A') { // If value is a hex letter, convert to corresponding number
-    t = t - 55;        
+    t = t - 55;
   }
 
   else {
