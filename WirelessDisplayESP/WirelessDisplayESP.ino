@@ -19,18 +19,21 @@ RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, true);
 
 BluetoothSerial SerialBT;
 
-byte IMAGE_COUNT = EEPROM.read(0);
-byte SLIDE_TIME = EEPROM.read(1);
+//byte IMAGE_COUNT = EEPROM.read(0);
+//byte SLIDE_TIME = EEPROM.read(1);
+
+byte IMAGE_COUNT = 10;
+byte SLIDE_TIME = 1;
 
 void setup() {
-  Serial.begin(9600); // Open serial communications and wait for port to open
+  Serial.begin(115200); // Open serial communications and wait for port to open
   while (!Serial) { // wait for serial port to connect
     ; 
   }
 
   Serial.print("Initializing SD card...");
   
-  const int chipSelect = 53; // Define cs pin for sd card
+  const int chipSelect = 5; // Define cs pin for sd card
   if (!SD.begin(chipSelect)) {
     Serial.println("initialization failed!"); // Check to see if SD is recognised
     while (1);
