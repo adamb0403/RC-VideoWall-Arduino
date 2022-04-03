@@ -1,4 +1,4 @@
-#include <RGBmatrixPanel.h> // Required AdaFruit Libraries
+#include <RGBmatrixPanel.h> // Include required AdaFruit Libraries
 #include <Adafruit_GFX.h>
 
 #include <SPI.h> // SD libraries
@@ -12,7 +12,7 @@
 #define C   A2
 #define D   A3
 
-RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, true);
+RGBmatrixPanel matrix(A, B, C, D, CLK, LAT, OE, true); // Initialise matrix with defined pins and use double buffering
 
 const int chipSelect = 53; // Define cs pin for sd card
 char z;
@@ -41,11 +41,11 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   imgdata = SD.open("imgdata.txt"); // Open image counter file to read how many images are on SD card
-  z = imgdata.read();
-  t = imgdata.read();
+  z = imgdata.read(); // Store no. of images
+  t = imgdata.read(); // Store slide time
   imgdata.close();
   
-  y = z - '0';
+  y = z - '0'; // Convert ascii value to int value
   
   if (t >= 'A') { // If value is a hex letter, convert to corresponding number
     t = t - 55;        
@@ -55,9 +55,8 @@ void loop() {
     t = t - 48;
   }
 
-  u = t*1000;
+  u = t*1000; // Delay in milliseconds
 
-  float time1 = micros();
   for (x=1; x<=y; x++) { // Iterate for all images on sd card
     String fname = String(x) + ".txt"; // Form image file name
     image = SD.open(fname); //open image file for reading
@@ -92,18 +91,14 @@ void loop() {
           b = b - 48;
         }
         
-        matrix.drawPixel(j, i, matrix.Color444(r, g, b)); // Draw the RGB pixel
+        matrix.drawPixel(j, i, matrix.Color444(r, g, b)); // Output the 4 bit colours to the matrix buffer
       }
     }
     
-    matrix.swapBuffers(false);
+    matrix.swapBuffers(false); // Output the buffer to the display
     image.close();
 
 
-    //delay(u); // how long each image displays for
+    delay(u); // how long each image displays for
   }
-  
-    float time2 = micros();
-    float fps = (7.0/(time2-time1))*1000000.0;
-      Serial.println(fps);
 }
